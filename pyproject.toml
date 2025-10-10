@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "sentinel-protocol"
+version = "0.1.0"
+description = "Autonomous intelligence system for real-time news analysis and broadcasting."
+authors = ["Jules"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+pydantic = "^2.7.1"
+pydantic-settings = "^2.2.1"
+celery = "^5.4.0"
+redis = "^5.0.4"
+requests = "^2.31.0"
+python-dotenv = "^1.0.1"
+instagrapi = "^2.0.0" # For the broadcaster. Updated to support Pydantic v2.
+sqlmodel = "^0.0.18"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

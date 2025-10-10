@@ -1,0 +1,33 @@
+{
+  "name": "sentinel-command-center",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.8"
+  },
+  "scripts": {
+    "start": "echo 'This is a placeholder. Use a real React setup (like Create React App or Vite) to run the frontend.'",
+    "build": "echo 'This is a placeholder for the build script.'",
+    "test": "echo 'This is a placeholder for the test script.'"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

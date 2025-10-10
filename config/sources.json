@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Official News Agency",
+    "url": "http://example.com/rss",
+    "type": "rss",
+    "authority_tier": 5,
+    "is_active": true
+  },
+  {
+    "name": "Niche Tech Blog",
+    "url": "http://techblog.example.com/feed",
+    "type": "rss",
+    "authority_tier": 2,
+    "is_active": true
+  },
+  {
+    "name": "X Source",
+    "url": "https://x.com/example_user",
+    "type": "x",
+    "authority_tier": 3,
+    "is_active": false
+  },
+  {
+    "name": "Inactive Source",
+    "url": "http://inactive.example.com/rss",
+    "type": "rss",
+    "authority_tier": 1,
+    "is_active": false
+  }
+]
