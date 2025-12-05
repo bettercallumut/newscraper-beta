@@ -17,6 +17,8 @@ requests = "^2.31.0"
 python-dotenv = "^1.0.1"
 instagrapi = "^2.0.0" # For the broadcaster. Updated to support Pydantic v2.
 sqlmodel = "^0.0.18"
+gTTS = "^2.5.1"
+moviepy = "^1.0.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"

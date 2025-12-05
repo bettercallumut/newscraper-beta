@@ -115,28 +115,3 @@ def get_sources(session: Session = Depends(get_session)):
     """
     sources = session.exec(select(Source)).all()
     return sources
-
-@app.post("/api/sources/reload")
-def reload_sources_from_json(session: Session = Depends(get_session)):
-    """
-    Clears the sources table and reloads it from the `config/sources.json` file.
-    This is a simple way to manage sources without a full CRUD UI.
-    """
-    try:
-        with open("config/sources.json", "r") as f:
-            sources_data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read or parse sources.json: {e}")
-
-    # Clear existing sources
-    session.exec(delete(Source))
-
-    # Load new sources
-    new_sources = []
-    for s_data in sources_data:
-        source = Source(**s_data)
-        session.add(source)
-        new_sources.append(source)
-
-    session.commit()
-    return {"message": f"Successfully reloaded {len(new_sources)} sources from sources.json."}

@@ -2,6 +2,9 @@ import celery
 import re
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from gtts import gTTS
+import os
+from moviepy.editor import ImageClip, AudioFileClip, CompositeVideoClip
 
 # Assuming core.config and core.models are in the python path.
 # This will be true when running via the project's entry points.
@@ -88,10 +91,32 @@ def generate_image_from_prompt(prompt: str) -> str:
     # In a real implementation, this would return the URL or path to the downloaded image
     return "/tmp/generated_image.jpg"
 
-def post_image_to_instagram(image_path: str, caption: str):
-    """Placeholder for instagrapi posting logic."""
-    print(f"Uploading {image_path} to Instagram with caption:\n---\n{caption}\n---")
+def post_video_to_instagram(video_path: str, caption: str):
+    """Placeholder for instagrapi posting logic for videos."""
+    print(f"Uploading {video_path} to Instagram with caption:\n---\n{caption}\n---")
     print("Post successful!")
+
+
+def generate_tts_audio(text: str, language: str = 'tr') -> str:
+    """
+    Generates a Turkish audio file from the given text using gTTS.
+    """
+    try:
+        # Ensure the /tmp directory exists
+        os.makedirs("/tmp", exist_ok=True)
+
+        # Sanitize the filename to be safe
+        safe_filename = "news_audio.mp3"
+        audio_path = os.path.join("/tmp", safe_filename)
+
+        print(f"Generating TTS audio for text: '{text[:50]}...'")
+        tts = gTTS(text=text, lang=language, slow=False)
+        tts.save(audio_path)
+        print(f"Successfully saved TTS audio to {audio_path}")
+        return audio_path
+    except Exception as e:
+        print(f"An error occurred during TTS generation: {e}")
+        return ""
 
 
 # --- Celery App Initialization ---
@@ -198,7 +223,7 @@ def analyze_and_alert_task(raw_intel: Dict[str, Any]):
 @app.task(name="tasks.post_to_instagram_task")
 def post_to_instagram_task(briefing_id: str):
     """
-    Triggered by user approval to generate an image and post to Instagram.
+    Triggered by user approval to generate a video with TTS and post it to Instagram.
     """
     print("\n--- Instagram Post Task Initiated ---")
     # 1. Fetch the briefing data from the database
@@ -207,16 +232,53 @@ def post_to_instagram_task(briefing_id: str):
         print(f"Error: Briefing with ID {briefing_id} not found.")
         return
 
-    # 2. Generate the image using the prompt from the briefing
+    # 2. Generate the image
     image_path = generate_image_from_prompt(briefing.image_generation_prompt)
+    if not os.path.exists(image_path):
+        # Create a dummy image file for the mock
+        from PIL import Image
+        img = Image.new('RGB', (1080, 1080), color = 'darkgrey')
+        img.save(image_path)
+        print(f"Created a dummy image at: {image_path}")
 
-    # 3. Construct the full caption with hashtags
-    full_caption = briefing.instagram_caption + "\n\n" + " ".join(briefing.instagram_hashtags)
+    # 3. Generate the TTS audio
+    # The text to be converted to speech is the briefing's summary
+    audio_path = generate_tts_audio(briefing.summary, language='tr')
+    if not audio_path:
+        print(f"TTS audio generation failed for briefing ID {briefing_id}.")
+        return
 
-    # 4. Upload the image and caption to Instagram
-    post_image_to_instagram(image_path, full_caption)
+    # 4. Combine image and audio into a video
+    try:
+        print("Creating video from image and audio...")
+        audio_clip = AudioFileClip(audio_path)
+        image_clip = ImageClip(image_path).set_duration(audio_clip.duration)
 
-    # 5. Update the briefing status in the DB (placeholder)
+        # Set the audio of the image clip
+        video_clip = image_clip.set_audio(audio_clip)
+        video_clip.fps = 24 # A standard frame rate
+
+        video_path = "/tmp/final_video.mp4"
+        video_clip.write_videofile(video_path, codec="libx264", audio_codec="aac")
+        print(f"Video successfully created at {video_path}")
+
+    except Exception as e:
+        print(f"Error creating video: {e}")
+        return
+    finally:
+        # Clean up the temporary audio and image files
+        if os.path.exists(audio_path):
+            os.remove(audio_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
+    # 5. Construct the full caption
+    full_caption = briefing.instagram_caption + "\n\n" + " ".join(f"#{tag}" for tag in briefing.instagram_hashtags)
+
+    # 6. Upload the video to Instagram
+    post_video_to_instagram(video_path, full_caption)
+
+    # 7. Update briefing status in the DB
     print(f"Updating status of briefing {briefing_id} to 'posted'.")
     print("--- Instagram Post Task Complete ---")
 
